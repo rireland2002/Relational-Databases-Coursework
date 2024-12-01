@@ -1,0 +1,187 @@
+The game database contains customers, characters, combat activities, items and bills. A customer has an account number, forename, surname, email address and an associated character name. 
+A customer must have at least one character, but can have as many as they want. Customers can only create one character a day to dissuade malicious users. 
+Customers must pay a bill each month for all their active characters. A bill consists of a character creation date, expiry date and it has an associated account number related to the customer paying the bill. 
+A character has a name, type, level, xp, max health, current health, attack score, defense score, stealth score, mana score if they possess magic, money in their wallet and money in their bank. Each character may possess a variety
+of items. Items have a name, character, item type, weapon type if they are a weapon, range if they are a weapon, price, quantity, defend score if it is armor, attack score if it is a weapon,
+healing score if it is a supply, mana score if it is a supply, a single use flag, a wearable flag, a worn flag, a body part to be worn on and an equipped flag if it is a weapon 
+that is equipped. Items have an associated character that possesses them, if this character is removed from the game the item is up for grabs for other players. 
+Each character may participate in combat activities which consist of a date, battle number, an attacker and defender, their weapons, the result of the current action and the damage caused. 
+A character participates against one other character in a combat activity. Combat activites have an associated character name based on who attacks in the battle.
+When a player unsubscribes from the game their related characters are deleted, their items are discarded but not deleted and combat activity information is deleted. 
+A customer pays many bills based on how many character creation/expiry dates they have linked to their account number.   
+
+
+Customer(Forename:Text, Account_Number:Integer, Surname:Text, E-mail_Address:Text)
+IC:Forename TEXT NOT NULL,
+   Surname TEXT NOT NULL,
+   Account_Number INT PRIMARY KEY NOT NULL,
+   E-mail_Address TEXT NOT NULL,
+   Character_Name TEXT NOT NULL,
+   FOREIGN KEY (Character_Name)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE CASCADE
+
+CustomerHasCharacter(Account_Number:Integer, StealthScore:Integer, Money_bank:Integer, Money_wallet:Integer, ManaScore:Integer, Health:Integer, Max_Health:Integer, Character_Type:Text, Level:Integer, DefenseScore:Integer ,ExperiencePoints:Integer, AttackingScore:Integer, Character_Name:Text)
+IC:Money_wallet INT NOT NULL, 
+  Money_bank INT NOT NULL, 
+  ManaScore INT,
+  Health INT NOT NULL,
+  Max_Heath INT NOT NULL,
+  Character_Type TEXT NOT NULL,
+  Level INT NOT NULL,
+  DefenceScore INT NOT NULL,
+  ExperiencePoints INT NOT NULL,
+  AttackinScore INT NOT NULL,
+  Character_Name TEXT PRIMARY KEY NOT NULL,
+  StealthScore INT NOT NULL, 
+  Account_Number INT NOT NULL,
+  FOREIGN KEY (AccNum)
+     REFERENCES Customer (Account_Number)
+        ON DELETE CASCADE
+
+CustomerHasBill(Character_Creation_Date:Text, Character_Expiry_Date:Text)
+IC:Character_Creation_Date TEXT NOT NULL,
+  Character_Expiry_Date TEXT,
+  AccNum INT NOT NULL,
+  PrimaryKey(Character_Creation_Date, AccNum),
+  FOREIGN KEY (AccNum)
+     REFERENCES Customer (Account_Number)
+        ON DELETE CASCADE
+
+CharacterHasItem(Character_Name:Text, Character:Text, Item_Type:Text ,DefendScore:Integer ,ManaScore:Integer ,Item:Text ,WeaponType:Text ,Quantity:Integer ,Range:Integer ,Price:Integer ,HealingScore:Integer , AttackScore:Integer, SingleUse:Integer, Wearable:Integer, worn:Integer, BodyPart:Text, Equipped:Text )
+IC:Character TEXT NOT NULL,
+  Item_Type TEXT NOT NULL,
+  DefendScore INT,
+  ManaScore INT,
+  Item TEXT NOT NULL,
+  WeaponType TEXT,
+  Quantity INT NOT NULL,
+  Range INT,
+  Price INT NOT NULL,
+  HealingScore INT,
+  AttackScore INT,
+  SingleUse INT,
+  Wearable INT,
+  Worn INT,
+  Equipped INT,
+  BodyPart TEXT,
+  Character_Name TEXT NOT NULL,
+  PRIMARY KEY(Item, Character_Name),
+  FOREIGN KEY (CharName)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE SET NULL
+
+CharacterHasCombat(Damage:Integer, BattleDate:Text, Defender:Text, Battle_No:Integer, Weapon:Text, Attacker:Text, Result:Text, Character_Name:Text)
+IC:Damage INT NOT NULL,
+  BattleDate TEXT NOT NULL,
+  Defender TEXT NOT NULL,
+  Battle_No INT NOT NULL,    
+  Weapon TEXT NOT NULL,
+  Attacker TEXT NOT NULL,
+  Result TEXT NOT NULL,
+  Character_Name TEXT NOT NULL,
+  PRIMARY KEY (Character_Name, Battle_No, Damage),
+  FOREIGN KEY (Character_Name)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE CASCADE
+
+CREATE TABLE Customer
+(
+   Forename TEXT NOT NULL,
+   Surname TEXT NOT NULL,
+   Account_Number INT NOT NULL,
+   E-mail_Address TEXT NOT NULL,
+   Character_Name TEXT NOT NULL,
+   PRIMARY KEY (Account_Number, Character_Name),
+   FOREIGN KEY (Character_Name)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE CASCADE
+)
+1st normal form - forename and surname depend on account number
+
+CREATE TABLE CustomerHasCharacter
+(
+  Money_wallet INT NOT NULL, 
+  Money_bank INT NOT NULL, 
+  ManaScore INT,
+  Health INT NOT NULL,
+  Max_Heath INT NOT NULL,
+  Character_Type TEXT NOT NULL,
+  Level INT NOT NULL,
+  DefenseScore INT NOT NULL,
+  ExperiencePoints INT NOT NULL,
+  AttackingScore INT NOT NULL,
+  Character_Name TEXT PRIMARY KEY NOT NULL,
+  StealthScore INT NOT NULL, 
+  AccNum INT NOT NULL,
+  FOREIGN KEY (AccNum)
+     REFERENCES Customer (Account_Number)
+        ON DELETE CASCADE
+)
+2nd normal form- No non prime attr depend on character name 
+
+CREATE TABLE CustomerHasBill
+(
+  Character_Creation_Date TEXT NOT NULL,
+  Character_Expiry_Date TEXT,
+  AccNum INT NOT NULL,
+  PrimaryKey(Character_Creation_Date, AccNum),
+  FOREIGN KEY (AccNum)
+     REFERENCES Customer (Account_Number)
+        ON DELETE CASCADE 
+)
+3rd normal form- No none prime attributes so all attributes depend on the prime, no functional dependencies so not boyce codd 
+
+CREATE TABLE CharacterHasItems
+(
+  Character TEXT NOT NULL,
+  Item_Type TEXT NOT NULL,
+  DefendScore INT,
+  ManaScore INT,
+  Item TEXT PRIMARY KEY NOT NULL,
+  WeaponType TEXT,
+  Quantity INT NOT NULL,
+  Range INT,
+  Price INT NOT NULL,
+  HealingScore INT,
+  AttackScore INT,
+  SingleUse INT,
+  Wearable INT,
+  Worn INT,
+  Equipped INT,
+  Character_Name TEXT NOT NULL,
+  PRIMARY KEY(Item, Character_Name),
+  FOREIGN KEY (CharName)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE SET NULL
+)
+1st Normal Form - Character_Name and Character match so not second
+
+CREATE TABLE CharacterHasCombat
+(
+  Damage INT NOT NULL,
+  BattleDate TEXT NOT NULL,
+  Defender TEXT NOT NULL,
+  Battle_No INT NOT NULL,    
+  Weapon TEXT NOT NULL,
+  Attacker TEXT NOT NULL,
+  Result TEXT NOT NULL,
+  Character_Name TEXT NOT NULL,
+  PRIMARY KEY (Character_Name, Battle_No, Damage),
+  FOREIGN KEY (Character_Name)
+     REFERENCES CustomerHasCharacter (Character_Name)
+        ON DELETE CASCADE
+)
+1st normal form- Character_Name and Attacker match so not second
+
+SQL Queries
+SELECT Attacker, COUNT(Result) AS Hit_Count FROM CHARACTER_HAS_COMBAT WHERE Result = \"Hit\" OR Result = \"Victory\" GROUP BY Attacker ORDER BY Result DESC LIMIT 5
+SELECT Attacker, COUNT(Attacker) AS Total_Attack_Count FROM CHARACTER_HAS_COMBAT GROUP BY Attacker ORDER BY COUNT(Attacker)
+SELECT Attacker FROM CHARACTER_HAS_COMBAT GROUP BY Attacker ORDER BY COUNT(Attacker) DESC
+SELECT forename, surname FROM CUSTOMER GROUP BY forename HAVING COUNT(Account_Number)>=5
+SELECT Item FROM CHARACTER_HAS_ITEMS WHERE Item_Type = \"Weapon\" GROUP BY Item HAVING COUNT(Item)>=10
+
+
+
+
+
